@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>경제적 자유 시뮬레이터</title>
+  <style>
+    :root {
+      --bg: #f7f5f2;
+      --card: #ffffff;
+      --line: #e8e1d9;
+      --text: #202124;
+      --sub: #6b7280;
+      --accent: #f59e0b;
+      --accent-soft: #fff3df;
+      --header: #faf7f2;
+      --danger: #b91c1c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .wrap {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    .title {
+      margin-bottom: 20px;
+    }
+    .title h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+    }
+    .title p {
+      margin: 0;
+      color: var(--sub);
+      line-height: 1.5;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 420px minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+      overflow: hidden;
+    }
+    .panel-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: var(--header);
+      font-weight: 700;
+    }
+    .inputs {
+      padding: 8px 20px 20px;
+      max-height: calc(100vh - 170px);
+      overflow: auto;
+    }
+    .section {
+      margin-top: 16px;
+      border-top: 1px solid var(--line);
+      padding-top: 16px;
+    }
+    .section:first-child {
+      margin-top: 8px;
+      border-top: 0;
+      padding-top: 0;
+    }
+    .section-title {
+      margin: 0 0 12px;
+      font-size: 14px;
+      color: var(--sub);
+      font-weight: 700;
+    }
+    .field {
+      margin-bottom: 14px;
+    }
+    .field label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .hint {
+      margin-top: 5px;
+      font-size: 12px;
+      color: var(--sub);
+      line-height: 1.4;
+    }
+    .input-wrap {
+      display: flex;
+      align-items: center;
+      background: var(--accent-soft);
+      border: 1px solid #f4c16a;
+      border-radius: 12px;
+      padding: 0 12px;
+      min-height: 46px;
+    }
+    .input-wrap input {
+      flex: 1;
+      min-width: 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      padding: 12px 0;
+      font-size: 15px;
+      color: var(--text);
+    }
+    .suffix {
+      color: #92400e;
+      font-weight: 700;
+      margin-left: 8px;
+      white-space: nowrap;
+    }
+    .actions {
+      display: flex;
+      gap: 10px;
+      padding: 0 20px 20px;
+    }
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .primary {
+      background: #111827;
+      color: white;
+    }
+    .ghost {
+      background: #f3f4f6;
+      color: #111827;
+    }
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 12px;
+      padding: 20px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #fff, #fcfbf8);
+    }
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      background: white;
+    }
+    .metric .label {
+      font-size: 13px;
+      color: var(--sub);
+      margin-bottom: 6px;
+    }
+    .metric .value {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .table-wrap {
+      padding: 0 0 6px;
+      overflow: auto;
+      max-height: calc(100vh - 170px);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
+    thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      text-align: right;
+      padding: 14px 16px;
+      background: white;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+      color: var(--sub);
+    }
+    thead th:first-child, tbody td:first-child { text-align: left; }
+    tbody td {
+      padding: 12px 16px;
+      border-bottom: 1px solid #f1ece5;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    tbody tr:hover { background: #fffcf7; }
+    .negative { color: var(--danger); font-weight: 700; }
+    .muted { color: var(--sub); }
+    @media (max-width: 1100px) {
+      .grid { grid-template-columns: 1fr; }
+      .inputs, .table-wrap { max-height: none; }
+      .summary { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+    @media (max-width: 680px) {
+      .wrap { padding: 14px; }
+      .summary { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">
+      <h1>경제적 자유 시뮬레이터</h1>
+      <p>왼쪽 오렌지색 칸에 값을 넣으면 오른쪽 표가 자동으로 계산됩니다. 나이를 넣으면 100세까지 자산, 연 소비, 연 수입이 계산됩니다.</p>
+    </div>
+
+    <div class="grid">
+      <section class="panel">
+        <div class="panel-header">입력 항목</div>
+        <div class="inputs" id="inputs"></div>
+        <div class="actions">
+          <button class="primary" id="recalcBtn">다시 계산</button>
+          <button class="ghost" id="resetBtn">기본값으로 초기화</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">시뮬레이션 결과</div>
+        <div class="summary" id="summary"></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>나이</th>
+                <th>자산</th>
+                <th>연 소비</th>
+                <th>연 수입</th>
+              </tr>
+            </thead>
+            <tbody id="resultBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const FIELD_DEFS = [
+      { key: 'currentAge', label: '현재 나이', type: 'age', value: 35, group: '기본 정보' },
+      { key: 'totalAsset', label: '전체 자산', type: 'money', value: 200000000, group: '기본 정보', hint: '연금은 선택 사항입니다.' },
+      { key: 'investShare', label: '투자 자산 비중', type: 'percent', value: 70, group: '수익률 가정', hint: '나머지는 현금성 자산으로 계산합니다.' },
+      { key: 'investReturn', label: '투자 자산 연 수익률', type: 'percent', value: 10, group: '수익률 가정' },
+      { key: 'cashReturn', label: '현금성 자산 연 수익률', type: 'percent', value: 2, group: '수익률 가정' },
+      { key: 'annualConsumption', label: '연 소비', type: 'money', value: 40000000, group: '생활비/소득' },
+      { key: 'consGrowth', label: '연 소비 증가율', type: 'percent', value: 3, group: '생활비/소득', hint: '인플레이션 반영입니다.' },
+      { key: 'annualIncome', label: '연 수입', type: 'money', value: 50000000, group: '생활비/소득' },
+      { key: 'incomeGrowth', label: '연 수입 증가율', type: 'percent', value: 5, group: '생활비/소득' },
+      { key: 'retireAge', label: '은퇴 나이', type: 'age', value: 60, group: '생활비/소득', hint: '이 나이부터 연 수입이 0이 됩니다.' },
+      { key: 'saleCost', label: '자산 매각 비용', type: 'percent', value: 10, group: '생활비/소득', hint: '투자 자산을 팔 때 나가는 비용과 세금입니다.' },
+      { key: 'consChangeAge1', label: '소비 변화 나이 1', type: 'age', value: 55, group: '소비 변화' },
+      { key: 'consChangeAmt1', label: '소비 변화 금액 1', type: 'money', value: -5000000, group: '소비 변화', hint: '증가면 +, 감소면 - 입니다.' },
+      { key: 'consChangeAge2', label: '소비 변화 나이 2', type: 'age', value: 80, group: '소비 변화' },
+      { key: 'consChangeAmt2', label: '소비 변화 금액 2', type: 'money', value: -20000000, group: '소비 변화', hint: '증가면 +, 감소면 - 입니다.' },
+      { key: 'natPensionAge', label: '국민연금 수령 나이', type: 'age', value: 65, group: '연금' },
+      { key: 'natPensionAmt', label: '국민연금 수령 금액', type: 'money', value: 1000000, group: '연금' },
+      { key: 'privPensionAge', label: '개인연금 수령 나이', type: 'age', value: 55, group: '연금' },
+      { key: 'privPensionYears', label: '개인연금 수령 기간', type: 'years', value: 30, group: '연금', hint: '몇 년간 수령할지 입력합니다.' },
+      { key: 'privPensionAmt', label: '개인연금 수령 금액', type: 'money', value: 3000000, group: '연금' },
+      { key: 'recessionCycle', label: '불황 주기', type: 'years', value: 6, group: '특수 시나리오', hint: '몇 년에 한 번씩인지 입력합니다.' },
+      { key: 'recessionDrop', label: '불황 시 하락률', type: 'percent', value: 10, group: '특수 시나리오', hint: '전체 자산의 하락률입니다.' },
+      { key: 'allSafeAge', label: 'ALL 안전 자산 나이', type: 'age', value: 85, group: '특수 시나리오', hint: '이 나이부터 전체 자산 수익률이 아래 값으로 바뀝니다.' },
+      { key: 'allSafeReturn', label: 'ALL 안전 자산 수익률', type: 'percent', value: 2, group: '특수 시나리오' },
+      { key: 'doomsdayAge', label: '둠스데이 나이', type: 'age', value: '', group: '특수 시나리오', hint: '시장이 크게 하락하는 사건이 생기는 나이입니다.' },
+      { key: 'doomsdayDrop', label: '둠스데이 하락률', type: 'percent', value: '', group: '특수 시나리오', hint: '전체 자산의 하락률입니다.' },
+      { key: 'doomsdayConsCut', label: '둠스데이 소비 감소율', type: 'percent', value: '', group: '특수 시나리오', hint: '둠스데이 이후 그 해의 소비 감소율입니다.' }
+    ];
+
+    const inputsEl = document.getElementById('inputs');
+    const resultBody = document.getElementById('resultBody');
+    const summaryEl = document.getElementById('summary');
+
+    function formatMoney(value) {
+      if (value === '' || value === null || value === undefined || Number.isNaN(value)) return '';
+      const rounded = Math.round(value);
+      return rounded.toLocaleString('ko-KR');
+    }
+
+    function formatSignedMoney(value) {
+      if (value === '' || value === null || value === undefined || Number.isNaN(value)) return '';
+      const rounded = Math.round(value);
+      return rounded.toLocaleString('ko-KR');
+    }
+
+    function formatPercent(value) {
+      if (value === '' || value === null || value === undefined || Number.isNaN(value)) return '';
+      return Number(value).toLocaleString('ko-KR', { maximumFractionDigits: 2 });
+    }
+
+    function parseNumeric(text) {
+      if (text === '' || text === null || text === undefined) return null;
+      const cleaned = String(text).replace(/,/g, '').replace(/%/g, '').trim();
+      if (cleaned === '') return null;
+      const num = Number(cleaned);
+      return Number.isFinite(num) ? num : null;
+    }
+
+    function toDecimal(percentValue) {
+      const n = parseNumeric(percentValue);
+      return n === null ? null : n / 100;
+    }
+
+    function buildInputs() {
+      const groups = [...new Set(FIELD_DEFS.map(f => f.group))];
+      inputsEl.innerHTML = '';
+
+      groups.forEach(group => {
+        const sec = document.createElement('div');
+        sec.className = 'section';
+        sec.innerHTML = `<div class="section-title">${group}</div>`;
+
+        FIELD_DEFS.filter(f => f.group === group).forEach(field => {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'field';
+          const suffix = field.type === 'percent' ? '%' : '';
+          const displayValue = field.type === 'money'
+            ? formatMoney(field.value)
+            : field.type === 'percent'
+              ? formatPercent(field.value)
+              : field.value;
+
+          wrapper.innerHTML = `
+            <label for="${field.key}">${field.label}</label>
+            <div class="input-wrap">
+              <input id="${field.key}" data-type="${field.type}" value="${displayValue ?? ''}" autocomplete="off" inputmode="decimal" />
+              ${suffix ? `<span class="suffix">${suffix}</span>` : ''}
+            </div>
+            ${field.hint ? `<div class="hint">${field.hint}</div>` : ''}
+          `;
+          sec.appendChild(wrapper);
+        });
+        inputsEl.appendChild(sec);
+      });
+
+      document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('focus', () => {
+          const type = input.dataset.type;
+          const raw = input.value.replace(/,/g, '');
+          if (type === 'money') input.value = raw;
+        });
+        input.addEventListener('blur', () => {
+          const type = input.dataset.type;
+          const parsed = parseNumeric(input.value);
+          if (parsed === null) {
+            input.value = '';
+            calculateAndRender();
+            return;
+          }
+          if (type === 'money') input.value = formatMoney(parsed);
+          else if (type === 'percent') input.value = formatPercent(parsed);
+          else input.value = String(Math.round(parsed));
+          calculateAndRender();
+        });
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            input.blur();
+          }
+        });
+      });
+    }
+
+    function getValues() {
+      const values = {};
+      FIELD_DEFS.forEach(field => {
+        const el = document.getElementById(field.key);
+        const parsed = parseNumeric(el.value);
+        values[field.key] = parsed;
+      });
+      values.investShare = toDecimal(values.investShare);
+      values.investReturn = toDecimal(values.investReturn);
+      values.cashReturn = toDecimal(values.cashReturn);
+      values.consGrowth = toDecimal(values.consGrowth);
+      values.incomeGrowth = toDecimal(values.incomeGrowth);
+      values.saleCost = toDecimal(values.saleCost);
+      values.recessionDrop = toDecimal(values.recessionDrop);
+      values.allSafeReturn = toDecimal(values.allSafeReturn);
+      values.doomsdayDrop = toDecimal(values.doomsdayDrop);
+      values.doomsdayConsCut = toDecimal(values.doomsdayConsCut);
+      return values;
+    }
+
+    function safeNumber(n, fallback = 0) {
+      return Number.isFinite(n) ? n : fallback;
+    }
+
+    function calculateRows(v) {
+      const rows = [];
+      const startAge = Math.round(safeNumber(v.currentAge, 0));
+      const endAge = Math.max(startAge, 100);
+      const weightedReturn = safeNumber(v.investShare, 0) * safeNumber(v.investReturn, 0)
+        + (1 - safeNumber(v.investShare, 0)) * safeNumber(v.cashReturn, 0);
+
+      let age = startAge;
+      let asset = safeNumber(v.totalAsset, 0);
+      let consumption = safeNumber(v.annualConsumption, 0);
+      let income = safeNumber(v.annualIncome, 0);
+
+      rows.push({ age, asset, consumption, income });
+
+      for (let i = 1; age < endAge; i++) {
+        const nextAge = age + 1;
+        const rowNumber = 2 + i;
+
+        let growthFactor;
+        const hasAllSafeAge = Number.isFinite(v.allSafeAge);
+        const hitDoomsday = Number.isFinite(v.doomsdayAge) && nextAge === v.doomsdayAge;
+
+        if (!hasAllSafeAge) {
+          if (hitDoomsday) {
+            growthFactor = 1 - safeNumber(v.doomsdayDrop, 0);
+          } else if (!Number.isFinite(v.recessionCycle) || v.recessionCycle === 0) {
+            growthFactor = 1 + weightedReturn;
+          } else if (rowNumber % Math.round(v.recessionCycle) === 0) {
+            growthFactor = 1 - safeNumber(v.recessionDrop, 0);
+          } else {
+            growthFactor = 1 + weightedReturn;
+          }
+        } else {
+          if (nextAge < v.allSafeAge) {
+            if (hitDoomsday) {
+              growthFactor = 1 - safeNumber(v.doomsdayDrop, 0);
+            } else if (!Number.isFinite(v.recessionCycle) || v.recessionCycle === 0) {
+              growthFactor = 1 + weightedReturn;
+            } else if (rowNumber % Math.round(v.recessionCycle) === 0) {
+              growthFactor = 1 - safeNumber(v.recessionDrop, 0);
+            } else {
+              growthFactor = 1 + weightedReturn;
+            }
+          } else {
+            growthFactor = 1 + safeNumber(v.allSafeReturn, 0);
+          }
+        }
+
+        const consAgeAdj1 = nextAge === v.consChangeAge1 ? safeNumber(v.consChangeAmt1, 0) : 0;
+        const consAgeAdj2 = nextAge === v.consChangeAge2 ? safeNumber(v.consChangeAmt2, 0) : 0;
+        const consDoomFactor = hitDoomsday ? 1 - safeNumber(v.doomsdayConsCut, 0) : 1;
+        const nextConsumption = (consumption + consAgeAdj1 + consAgeAdj2) * (1 + safeNumber(v.consGrowth, 0)) * consDoomFactor;
+
+        const baseIncome = nextAge < safeNumber(v.retireAge, 0) ? income * (1 + safeNumber(v.incomeGrowth, 0)) : 0;
+        const natPension = nextAge >= safeNumber(v.natPensionAge, Number.POSITIVE_INFINITY) ? safeNumber(v.natPensionAmt, 0) : 0;
+        const privPension = (nextAge >= safeNumber(v.privPensionAge, Number.POSITIVE_INFINITY) && nextAge <= safeNumber(v.privPensionAge, Number.POSITIVE_INFINITY) + safeNumber(v.privPensionYears, -1))
+          ? safeNumber(v.privPensionAmt, 0)
+          : 0;
+        const nextIncome = baseIncome + natPension + privPension;
+
+        const withdrawal = nextIncome > nextConsumption
+          ? nextConsumption
+          : nextConsumption + (nextConsumption - nextIncome) * safeNumber(v.saleCost, 0);
+
+        const nextAsset = asset * growthFactor + nextIncome - withdrawal;
+
+        rows.push({
+          age: nextAge,
+          asset: nextAsset,
+          consumption: nextConsumption,
+          income: nextIncome,
+        });
+
+        age = nextAge;
+        asset = nextAsset;
+        consumption = nextConsumption;
+        income = nextIncome;
+      }
+
+      return { rows, weightedReturn };
+    }
+
+    function renderSummary(rows, weightedReturn) {
+      const last = rows[rows.length - 1];
+      const firstNegative = rows.find(r => r.asset < 0);
+      summaryEl.innerHTML = `
+        <div class="metric">
+          <div class="label">현재 가중 평균 수익률</div>
+          <div class="value">${(weightedReturn * 100).toLocaleString('ko-KR', { maximumFractionDigits: 2 })}%</div>
+        </div>
+        <div class="metric">
+          <div class="label">100세 자산</div>
+          <div class="value ${last.asset < 0 ? 'negative' : ''}">${formatSignedMoney(last.asset)}</div>
+        </div>
+        <div class="metric">
+          <div class="label">100세 연 소비</div>
+          <div class="value">${formatSignedMoney(last.consumption)}</div>
+        </div>
+        <div class="metric">
+          <div class="label">자산 소진 시점</div>
+          <div class="value ${firstNegative ? 'negative' : ''}">${firstNegative ? firstNegative.age + '세' : '없음'}</div>
+        </div>
+      `;
+    }
+
+    function renderTable(rows) {
+      resultBody.innerHTML = rows.map(row => `
+        <tr>
+          <td>${row.age}</td>
+          <td class="${row.asset < 0 ? 'negative' : ''}">${formatSignedMoney(row.asset)}</td>
+          <td>${formatSignedMoney(row.consumption)}</td>
+          <td>${formatSignedMoney(row.income)}</td>
+        </tr>
+      `).join('');
+    }
+
+    function calculateAndRender() {
+      const values = getValues();
+      const { rows, weightedReturn } = calculateRows(values);
+      renderSummary(rows, weightedReturn);
+      renderTable(rows);
+    }
+
+    document.getElementById('recalcBtn').addEventListener('click', calculateAndRender);
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      FIELD_DEFS.forEach(field => {
+        const el = document.getElementById(field.key);
+        if (!el) return;
+        if (field.type === 'money') el.value = field.value === '' ? '' : formatMoney(field.value);
+        else if (field.type === 'percent') el.value = field.value === '' ? '' : formatPercent(field.value);
+        else el.value = field.value;
+      });
+      calculateAndRender();
+    });
+
+    buildInputs();
+    calculateAndRender();
+  </script>
+</body>
+</html>
