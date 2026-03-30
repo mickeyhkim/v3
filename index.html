@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>경제적 자유 시뮬레이터</title>
+  <title>미키기의 경제적 자유 시뮬레이터 버전3</title>
   <style>
     :root {
       --bg: #f7f5f2;
@@ -211,8 +211,9 @@
 <body>
   <div class="wrap">
     <div class="title">
-      <h1>경제적 자유 시뮬레이터</h1>
-      <p>왼쪽 오렌지색 칸에 값을 넣으면 오른쪽 표가 자동으로 계산됩니다. 나이를 넣으면 100세까지 자산, 연 소비, 연 수입이 계산됩니다.</p>
+      <h1>미키김의 경제적 자유 시뮬레이터 버전3</h1>
+      <p>자세한 사용법을 소개한 다음 미키피디아 영상을 먼저 보실 것을 추천합니다.
+<br>노란색 입력칸에 숫자를 입력하시면, 나머지 값은 자동으로 계산됩니다..</p>
     </div>
 
     <div class="grid">
@@ -247,33 +248,33 @@
 
   <script>
     const FIELD_DEFS = [
-      { key: 'currentAge', label: '현재 나이', type: 'age', value: 35, group: '기본 정보' },
-      { key: 'totalAsset', label: '전체 자산', type: 'money', value: 200000000, group: '기본 정보', hint: '연금은 선택 사항입니다.' },
-      { key: 'investShare', label: '투자 자산 비중', type: 'percent', value: 70, group: '수익률 가정', hint: '나머지는 현금성 자산으로 계산합니다.' },
-      { key: 'investReturn', label: '투자 자산 연 수익률', type: 'percent', value: 10, group: '수익률 가정' },
-      { key: 'cashReturn', label: '현금성 자산 연 수익률', type: 'percent', value: 2, group: '수익률 가정' },
-      { key: 'annualConsumption', label: '연 소비', type: 'money', value: 40000000, group: '생활비/소득' },
-      { key: 'consGrowth', label: '연 소비 증가율', type: 'percent', value: 3, group: '생활비/소득', hint: '인플레이션 반영입니다.' },
-      { key: 'annualIncome', label: '연 수입', type: 'money', value: 50000000, group: '생활비/소득' },
-      { key: 'incomeGrowth', label: '연 수입 증가율', type: 'percent', value: 5, group: '생활비/소득' },
-      { key: 'retireAge', label: '은퇴 나이', type: 'age', value: 60, group: '생활비/소득', hint: '이 나이부터 연 수입이 0이 됩니다.' },
-      { key: 'saleCost', label: '자산 매각 비용', type: 'percent', value: 10, group: '생활비/소득', hint: '투자 자산을 팔 때 나가는 비용과 세금입니다.' },
-      { key: 'consChangeAge1', label: '소비 변화 나이 1', type: 'age', value: 55, group: '소비 변화' },
-      { key: 'consChangeAmt1', label: '소비 변화 금액 1', type: 'money', value: -5000000, group: '소비 변화', hint: '증가면 +, 감소면 - 입니다.' },
-      { key: 'consChangeAge2', label: '소비 변화 나이 2', type: 'age', value: 80, group: '소비 변화' },
-      { key: 'consChangeAmt2', label: '소비 변화 금액 2', type: 'money', value: -20000000, group: '소비 변화', hint: '증가면 +, 감소면 - 입니다.' },
-      { key: 'natPensionAge', label: '국민연금 수령 나이', type: 'age', value: 65, group: '연금' },
-      { key: 'natPensionAmt', label: '국민연금 수령 금액', type: 'money', value: 1000000, group: '연금' },
-      { key: 'privPensionAge', label: '개인연금 수령 나이', type: 'age', value: 55, group: '연금' },
-      { key: 'privPensionYears', label: '개인연금 수령 기간', type: 'years', value: 30, group: '연금', hint: '몇 년간 수령할지 입력합니다.' },
-      { key: 'privPensionAmt', label: '개인연금 수령 금액', type: 'money', value: 3000000, group: '연금' },
-      { key: 'recessionCycle', label: '불황 주기', type: 'years', value: 6, group: '특수 시나리오', hint: '몇 년에 한 번씩인지 입력합니다.' },
-      { key: 'recessionDrop', label: '불황 시 하락률', type: 'percent', value: 10, group: '특수 시나리오', hint: '전체 자산의 하락률입니다.' },
-      { key: 'allSafeAge', label: 'ALL 안전 자산 나이', type: 'age', value: 85, group: '특수 시나리오', hint: '이 나이부터 전체 자산 수익률이 아래 값으로 바뀝니다.' },
-      { key: 'allSafeReturn', label: 'ALL 안전 자산 수익률', type: 'percent', value: 2, group: '특수 시나리오' },
-      { key: 'doomsdayAge', label: '둠스데이 나이', type: 'age', value: '', group: '특수 시나리오', hint: '시장이 크게 하락하는 사건이 생기는 나이입니다.' },
-      { key: 'doomsdayDrop', label: '둠스데이 하락률', type: 'percent', value: '', group: '특수 시나리오', hint: '전체 자산의 하락률입니다.' },
-      { key: 'doomsdayConsCut', label: '둠스데이 소비 감소율', type: 'percent', value: '', group: '특수 시나리오', hint: '둠스데이 이후 그 해의 소비 감소율입니다.' }
+      { key: 'currentAge', label: '현재 나이', type: 'age', group: '기본 정보' },
+      { key: 'totalAsset', label: '전체 자산', type: 'money', group: '기본 정보'},
+      { key: 'investShare', label: '투자 자산 비중', type: 'percent', group: '수익률 가정', hint: '나머지는 현금성 자산으로 계산' },
+      { key: 'investReturn', label: '투자 자산 연 수익률', type: 'percent', group: '수익률 가정' },
+      { key: 'cashReturn', label: '현금성 자산 연 수익률', type: 'percent', group: '수익률 가정' },
+      { key: 'annualConsumption', label: '연 소비', type: 'money', group: '소비/소득' },
+      { key: 'consGrowth', label: '연 소비 증가율', type: 'percent', group: '소비/소득', hint: '인플레이션 반영' },
+      { key: 'annualIncome', label: '연 수입', type: 'money', group: '소비/소득' },
+      { key: 'incomeGrowth', label: '연 수입 증가율', type: 'percent', group: '소비/소득' },
+      { key: 'retireAge', label: '은퇴 나이', type: 'age', group: '소비/소득', hint: '수입이 없기 시작하는 나이' },
+      { key: 'saleCost', label: '자산 매각 비용', type: 'percent', group: '소비/소득', hint: '투자 자산을 팔 때 세금 등 비용 %' },
+      { key: 'consChangeAge1', label: '소비 변화 나이 1', type: 'age', group: '소비 변화' },
+      { key: 'consChangeAmt1', label: '소비 변화 금액 1', type: 'money', group: '소비 변화', hint: '증가면 +, 감소면 -' },
+      { key: 'consChangeAge2', label: '소비 변화 나이 2', type: 'age', group: '소비 변화' },
+      { key: 'consChangeAmt2', label: '소비 변화 금액 2', type: 'money', group: '소비 변화', hint: '증가면 +, 감소면 -' },
+      { key: 'natPensionAge', label: '국민연금 수령 나이', type: 'age', group: '연금' },
+      { key: 'natPensionAmt', label: '국민연금 수령 금액', type: 'money', group: '연금' },
+      { key: 'privPensionAge', label: '개인연금 수령 나이', type: 'age', group: '연금' },
+      { key: 'privPensionYears', label: '개인연금 수령 기간', type: 'years', group: '연금', hint: '몇 년간 수령' },
+      { key: 'privPensionAmt', label: '개인연금 수령 금액', type: 'money', group: '연금' },
+      { key: 'recessionCycle', label: '불황 주기', type: 'years', group: '특수 시나리오', hint: '몇 년에 한 번씩' },
+      { key: 'recessionDrop', label: '불황 시 하락률', type: 'percent', group: '특수 시나리오', hint: '전체 자산의 하락률' },
+      { key: 'allSafeAge', label: 'ALL 안전 자산 나이', type: 'age', group: '특수 시나리오', hint: '모든 자산이 현금성 자산인 시작 나이' },
+      { key: 'allSafeReturn', label: 'ALL 안전 자산 수익률', type: 'percent', group: '특수 시나리오' },
+      { key: 'doomsdayAge', label: '둠스데이 나이', type: 'age', group: '특수 시나리오', hint: '둠스데이가 생기는 나이' },
+      { key: 'doomsdayDrop', label: '둠스데이 하락률', type: 'percent', group: '특수 시나리오', hint: '둠스데이 전체 자산의 하락률' },
+      { key: 'doomsdayConsCut', label: '둠스데이 소비 감소율', type: 'percent', group: '특수 시나리오', hint: '둠스데이 이후 연 소비 감소율' }
     ];
 
     const inputsEl = document.getElementById('inputs');
@@ -481,21 +482,14 @@
       const firstNegative = rows.find(r => r.asset < 0);
       summaryEl.innerHTML = `
         <div class="metric">
-          <div class="label">현재 가중 평균 수익률</div>
-          <div class="value">${(weightedReturn * 100).toLocaleString('ko-KR', { maximumFractionDigits: 2 })}%</div>
+          <div class="label">자산 소진 시점</div>
+          <div class="value ${firstNegative ? 'negative' : ''}">${firstNegative ? firstNegative.age + '세' : '없음'}</div>
         </div>
         <div class="metric">
           <div class="label">100세 자산</div>
           <div class="value ${last.asset < 0 ? 'negative' : ''}">${formatSignedMoney(last.asset)}</div>
         </div>
-        <div class="metric">
-          <div class="label">100세 연 소비</div>
-          <div class="value">${formatSignedMoney(last.consumption)}</div>
-        </div>
-        <div class="metric">
-          <div class="label">자산 소진 시점</div>
-          <div class="value ${firstNegative ? 'negative' : ''}">${firstNegative ? firstNegative.age + '세' : '없음'}</div>
-        </div>
+     
       `;
     }
 
